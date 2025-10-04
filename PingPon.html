@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .menu {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .menu h1 {
+            font-size: 3em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .menu-button {
+            display: block;
+            width: 250px;
+            padding: 15px 30px;
+            margin: 15px auto;
+            font-size: 1.2em;
+            color: white;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .customization {
+            display: none;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .customization h3 {
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        .player-section {
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 20px;
+            text-align: left;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 5px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .color-option.selected {
+            border-color: white;
+        }
+
+        canvas {
+            border: 4px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            background: #000;
+        }
+
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 50px;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .pause-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .winner-display {
+            font-size: 1.5em;
+            color: #4ecdc4;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Menú Principal -->
+        <div id="mainMenu" class="menu">
+            <h1>🏓 Ping Pong</h1>
+            <button class="menu-button" onclick="showCustomization()">Personalizar</button>
+            <button class="menu-button" onclick="startGame()">Jugar</button>
+            <button class="menu-button" onclick="showControls()">Controles</button>
+            
+            <div id="customization" class="customization">
+                <h3>Personalización</h3>
+                
+                <div class="player-section">
+                    <h4>Jugador 1 (WASD)</h4>
+                    <div id="player1Colors">
+                        <div class="color-option selected" style="background-color: #ff6b6b" data-color="#ff6b6b"></div>
+                        <div class="color-option" style="background-color: #4ecdc4" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background-color: #45b7d1" data-color="#45b7d1"></div>
+                        <div class="color-option" style="background-color: #f9ca24" data-color="#f9ca24"></div>
+                        <div class="color-option" style="background-color: #6c5ce7" data-color="#6c5ce7"></div>
+                        <div class="color-option" style="background-color: #a29bfe" data-color="#a29bfe"></div>
+                    </div>
+                </div>
+
+                <div class="player-section">
+                    <h4>Jugador 2 (Flechas)</h4>
+                    <div id="player2Colors">
+                        <div class="color-option" style="background-color: #ff6b6b" data-color="#ff6b6b"></div>
+                        <div class="color-option selected" style="background-color: #4ecdc4" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background-color: #45b7d1" data-color="#45b7d1"></div>
+                        <div class="color-option" style="background-color: #f9ca24" data-color="#f9ca24"></div>
+                        <div class="color-option" style="background-color: #6c5ce7" data-color="#6c5ce7"></div>
+                        <div class="color-option" style="background-color: #a29bfe" data-color="#a29bfe"></div>
+                    </div>
+                </div>
+
+                <div class="player-section">
+                    <h4>Pelota</h4>
+                    <div id="ballColors">
+                        <div class="color-option selected" style="background-color: #ffffff" data-color="#ffffff"></div>
+                        <div class="color-option" style="background-color: #ff6b6b" data-color="#ff6b6b"></div>
+                        <div class="color-option" style="background-color: #4ecdc4" data-color="#4ecdc4"></div>
+                        <div class="color-option" style="background-color: #f9ca24" data-color="#f9ca24"></div>
+                        <div class="color-option" style="background-color: #6c5ce7" data-color="#6c5ce7"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="controlsInfo" style="display: none; margin-top: 20px; text-align: left; font-size: 0.9em;">
+                <h3>Controles:</h3>
+                <p><strong>Jugador 1:</strong> W (subir) / S (bajar)</p>
+                <p><strong>Jugador 2:</strong> ↑ (subir) / ↓ (bajar)</p>
+                <p><strong>Pausa:</strong> Barra espaciadora</p>
+                <p><strong>Reiniciar:</strong> R</p>
+            </div>
+        </div>
+
+        <!-- Canvas del juego -->
+        <canvas id="gameCanvas" width="800" height="400" style="display: none;"></canvas>
+
+        <!-- UI del juego -->
+        <div id="gameUI" class="game-ui" style="display: none;">
+            <div id="player1Score">0</div>
+            <div>VS</div>
+            <div id="player2Score">0</div>
+        </div>
+
+        <!-- Información de controles -->
+        <div id="controlsDisplay" class="controls-info" style="display: none;">
+            Jugador 1: W/S | Jugador 2: ↑/↓ | Pausa: ESPACIO | Reiniciar: R | Menú: ESC
+        </div>
+
+        <!-- Menú de pausa -->
+        <div id="pauseMenu" class="pause-menu">
+            <div id="winnerText" class="winner-display"></div>
+            <button class="menu-button" onclick="resumeGame()">Continuar</button>
+            <button class="menu-button" onclick="restartGame()">Reiniciar</button>
+            <button class="menu-button" onclick="backToMenu()">Menú Principal</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables del juego
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let gameRunning = false;
+        let gamePaused = false;
+        let animationId;
+
+        // Configuración del juego
+        const gameConfig = {
+            paddleWidth: 10,
+            paddleHeight: 80,
+            paddleSpeed: 10,
+            ballSize: 11,
+            ballSpeed: 8,
+            maxScore: 5
+        };
+
+        // Colores personalizables
+        let colors = {
+            player1: '#ff6b6b',
+            player2: '#4ecdc4',
+            ball: '#ffffff'
+        };
+
+        // Estado del juego
+        let gameState = {
+            player1: { y: canvas.height / 2 - gameConfig.paddleHeight / 2, score: 0 },
+            player2: { y: canvas.height / 2 - gameConfig.paddleHeight / 2, score: 0 },
+            ball: { 
+                x: canvas.width / 2, 
+                y: canvas.height / 2, 
+                dx: gameConfig.ballSpeed * (Math.random() > 5 ? 10: 1), 
+                dy: gameConfig.ballSpeed * (Math.random() > 5 ? 10 : 1) 
+            }
+        };
+
+        // Controles
+        const keys = {
+            w: false, s: false, // Jugador 1
+            ArrowUp: false, ArrowDown: false // Jugador 2
+        };
+
+        // Event listeners para personalización
+        function initializeCustomization() {
+            // Jugador 1
+            document.querySelectorAll('#player1Colors .color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#player1Colors .color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    colors.player1 = this.dataset.color;
+                });
+            });
+
+            // Jugador 2
+            document.querySelectorAll('#player2Colors .color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#player2Colors .color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    colors.player2 = this.dataset.color;
+                });
+            });
+
+            // Pelota
+            document.querySelectorAll('#ballColors .color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#ballColors .color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    colors.ball = this.dataset.color;
+                });
+            });
+        }
+
+        // Funciones del menú
+        function showCustomization() {
+            const custom = document.getElementById('customization');
+            const controls = document.getElementById('controlsInfo');
+            custom.style.display = custom.style.display === 'block' ? 'none' : 'block';
+            controls.style.display = 'none';
+        }
+
+        function showControls() {
+            const controls = document.getElementById('controlsInfo');
+            const custom = document.getElementById('customization');
+            controls.style.display = controls.style.display === 'block' ? 'none' : 'block';
+            custom.style.display = 'none';
+        }
+
+        function startGame() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameCanvas').style.display = 'block';
+            document.getElementById('gameUI').style.display = 'flex';
+            document.getElementById('controlsDisplay').style.display = 'block';
+            
+            resetGame();
+            gameRunning = true;
+            gamePaused = false;
+            gameLoop();
+        }
+
+        function resetGame() {
+            gameState.player1.score = 0;
+            gameState.player2.score = 0;
+            gameState.player1.y = canvas.height / 2 - gameConfig.paddleHeight / 2;
+            gameState.player2.y = canvas.height / 2 - gameConfig.paddleHeight / 2;
+            resetBall();
+            updateScore();
+        }
+
+        function resetBall() {
+            gameState.ball.x = canvas.width / 2;
+            gameState.ball.y = canvas.height / 2;
+            gameState.ball.dx = gameConfig.ballSpeed * (Math.random() > 0.5 ? 1 : -1);
+            gameState.ball.dy = gameConfig.ballSpeed * (Math.random() - 0.5);
+        }
+
+        function updateScore() {
+            document.getElementById('player1Score').textContent = gameState.player1.score;
+            document.getElementById('player2Score').textContent = gameState.player2.score;
+        }
+
+        function pauseGame() {
+            if (!gameRunning) return;
+            
+            gamePaused = !gamePaused;
+            if (gamePaused) {
+                document.getElementById('winnerText').textContent = '';
+                document.getElementById('pauseMenu').style.display = 'block';
+            } else {
+                document.getElementById('pauseMenu').style.display = 'none';
+                gameLoop();
+            }
+        }
+
+        function resumeGame() {
+            gamePaused = false;
+            document.getElementById('pauseMenu').style.display = 'none';
+            gameLoop();
+        }
+
+        function restartGame() {
+            gamePaused = false;
+            document.getElementById('pauseMenu').style.display = 'none';
+            resetGame();
+            gameLoop();
+        }
+
+        function backToMenu() {
+            gameRunning = false;
+            gamePaused = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            document.getElementById('gameCanvas').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'none';
+            document.getElementById('controlsDisplay').style.display = 'none';
+            document.getElementById('pauseMenu').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+        }
+
+        function checkWinner() {
+            if (gameState.player1.score >= gameConfig.maxScore) {
+                document.getElementById('winnerText').textContent = '¡Jugador 1 Gana!';
+                document.getElementById('pauseMenu').style.display = 'block';
+                gamePaused = true;
+                return true;
+            } else if (gameState.player2.score >= gameConfig.maxScore) {
+                document.getElementById('winnerText').textContent = '¡Jugador 2 Gana!';
+                document.getElementById('pauseMenu').style.display = 'block';
+                gamePaused = true;
+                return true;
+            }
+            return false;
+        }
+
+        // Lógica del juego
+        function updateGame() {
+            if (gamePaused) return;
+
+            // Mover jugadores
+            if (keys.KeyW && gameState.player1.y > 0) {
+                gameState.player1.y -= gameConfig.paddleSpeed;
+            }
+            if (keys.KeyS && gameState.player1.y < canvas.height - gameConfig.paddleHeight) {
+                gameState.player1.y += gameConfig.paddleSpeed;
+            }
+            if (keys.ArrowUp && gameState.player2.y > 0) {
+                gameState.player2.y -= gameConfig.paddleSpeed;
+            }
+            if (keys.ArrowDown && gameState.player2.y < canvas.height - gameConfig.paddleHeight) {
+                gameState.player2.y += gameConfig.paddleSpeed;
+            }
+
+            // Mover pelota
+            gameState.ball.x += gameState.ball.dx;
+            gameState.ball.y += gameState.ball.dy;
+
+            // Colisiones con paredes superior e inferior
+            if (gameState.ball.y - gameConfig.ballSize / 2 < 0 || 
+                gameState.ball.y + gameConfig.ballSize / 2 > canvas.height) {
+                gameState.ball.dy = -gameState.ball.dy;
+            }
+
+            // Colisiones con paletas
+            // Jugador 1 (izquierda)
+            if (gameState.ball.x - gameConfig.ballSize / 2 <= gameConfig.paddleWidth &&
+                gameState.ball.y >= gameState.player1.y &&
+                gameState.ball.y <= gameState.player1.y + gameConfig.paddleHeight &&
+                gameState.ball.dx < 0) {
+                
+                gameState.ball.dx = -gameState.ball.dx;
+                let relativeIntersectY = (gameState.ball.y - (gameState.player1.y + gameConfig.paddleHeight / 2));
+                let normalizedRelativeIntersection = relativeIntersectY / (gameConfig.paddleHeight / 2);
+                gameState.ball.dy = normalizedRelativeIntersection * gameConfig.ballSpeed;
+            }
+
+            // Jugador 2 (derecha)
+            if (gameState.ball.x + gameConfig.ballSize / 2 >= canvas.width - gameConfig.paddleWidth &&
+                gameState.ball.y >= gameState.player2.y &&
+                gameState.ball.y <= gameState.player2.y + gameConfig.paddleHeight &&
+                gameState.ball.dx > 0) {
+                
+                gameState.ball.dx = -gameState.ball.dx;
+                let relativeIntersectY = (gameState.ball.y - (gameState.player2.y + gameConfig.paddleHeight / 2));
+                let normalizedRelativeIntersection = relativeIntersectY / (gameConfig.paddleHeight / 2);
+                gameState.ball.dy = normalizedRelativeIntersection * gameConfig.ballSpeed;
+            }
+
+            // Puntuación
+            if (gameState.ball.x < 0) {
+                gameState.player2.score++;
+                updateScore();
+                if (!checkWinner()) {
+                    resetBall();
+                }
+            } else if (gameState.ball.x > canvas.width) {
+                gameState.player1.score++;
+                updateScore();
+                if (!checkWinner()) {
+                    resetBall();
+                }
+            }
+        }
+
+        function drawGame() {
+            // Limpiar canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Línea central
+            ctx.strokeStyle = '#fff';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Jugador 1
+            ctx.fillStyle = colors.player1;
+            ctx.fillRect(0, gameState.player1.y, gameConfig.paddleWidth, gameConfig.paddleHeight);
+
+            // Jugador 2
+            ctx.fillStyle = colors.player2;
+            ctx.fillRect(canvas.width - gameConfig.paddleWidth, gameState.player2.y, gameConfig.paddleWidth, gameConfig.paddleHeight);
+
+            // Pelota
+            ctx.fillStyle = colors.ball;
+            ctx.beginPath();
+            ctx.arc(gameState.ball.x, gameState.ball.y, gameConfig.ballSize / 1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() {
+            if (!gameRunning || gamePaused) return;
+            
+            updateGame();
+            drawGame();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Event listeners para teclado
+        document.addEventListener('keydown', function(e) {
+            // Controles del juego
+            switch(e.code) {
+                case 'KeyW':
+                    keys.KeyW = true;
+                    e.preventDefault();
+                    break;
+                case 'KeyS':
+                    keys.KeyS = true;
+                    e.preventDefault();
+                    break;
+                case 'ArrowUp':
+                    keys.ArrowUp = true;
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    keys.ArrowDown = true;
+                    e.preventDefault();
+                    break;
+                case 'Space':
+                    if (gameRunning) {
+                        pauseGame();
+                    }
+                    e.preventDefault();
+                    break;
+                case 'KeyR':
+                    if (gameRunning) {
+                        restartGame();
+                    }
+                    e.preventDefault();
+                    break;
+                case 'Escape':
+                    if (gameRunning) {
+                        backToMenu();
+                    }
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            // Liberar controles del juego
+            switch(e.code) {
+                case 'KeyW':
+                    keys.KeyW = false;
+                    e.preventDefault();
+                    break;
+                case 'KeyS':
+                    keys.KeyS = false;
+                    e.preventDefault();
+                    break;
+                case 'ArrowUp':
+                    keys.ArrowUp = false;
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    keys.ArrowDown = false;
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        // Inicializar personalización al cargar
+        window.addEventListener('load', function() {
+            initializeCustomization();
+        });
+    </script>
+</body>
+</html>
